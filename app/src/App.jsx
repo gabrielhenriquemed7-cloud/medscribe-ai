@@ -1,0 +1,55 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Login } from "./pages/Login";
+import { Consultas } from "./pages/Consultas";
+import { Consentimento } from "./pages/Consentimento";
+import { Gravacao } from "./pages/Gravacao";
+import { Anamnese } from "./pages/Anamnese";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/consultas"
+            element={
+              <ProtectedRoute>
+                <Consultas />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/consulta/:id/consentimento"
+            element={
+              <ProtectedRoute>
+                <Consentimento />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/consulta/:id/gravacao"
+            element={
+              <ProtectedRoute>
+                <Gravacao />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/consulta/:id/anamnese"
+            element={
+              <ProtectedRoute>
+                <Anamnese />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/consultas" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;

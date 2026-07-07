@@ -1,0 +1,136 @@
+:root {
+  --bg: #f5f6f4;
+  --ink: #1c2b33;
+  --ink-soft: #4b5a61;
+  --live: #3a7d66;
+  --live-soft: #e4efec;
+  --alert: #9c3d2e;
+  --alert-soft: #f3e5e1;
+  --mist: #aeb8be;
+  --card: #ffffff;
+  --card-border: #e2e6e4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Space Grotesk", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: "Space Grotesk", sans-serif;
+  cursor: pointer;
+  border: none;
+}
+
+input {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 9px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.field textarea {
+  font-family: "Space Grotesk", sans-serif;
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: 2px solid var(--live);
+  outline-offset: 1px;
+}
+
+.mark {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mark::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live);
+  display: inline-block;
+}
+
+.btn-primary {
+  background: var(--live);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 9px;
+  padding: 12px 18px;
+  font-size: 14px;
+}
+
+.btn-primary:disabled {
+  background: var(--mist);
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--card-border);
+  border-radius: 100px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+}
+
+.error-msg {
+  font-size: 13px;
+  color: var(--alert);
+  margin-top: 10px;
+  min-height: 16px;
+}
+
+.status-msg {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 10px;
+  min-height: 16px;
+}
+
+.status-msg.error {
+  color: var(--alert);
+}

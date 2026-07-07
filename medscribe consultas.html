@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedScribe AI — Consultas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#F5F6F4;
+    --ink:#1C2B33;
+    --ink-soft:#4B5A61;
+    --live:#3A7D66;
+    --live-soft:#E4EFEC;
+    --alert:#9C3D2E;
+    --alert-soft:#F3E5E1;
+    --mist:#AEB8BE;
+    --card:#FFFFFF;
+    --card-border:#E2E6E4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:'Space Grotesk',sans-serif;cursor:pointer;border:none;}
+  input{font-family:'Space Grotesk',sans-serif;}
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .login-card{max-width:360px;width:100%;}
+  .mark{
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:600;margin-bottom:22px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .mark::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--live);}
+  .login-card h1{
+    font-family:'Source Serif 4',serif;font-weight:500;
+    font-size:24px;margin:0 0 24px;line-height:1.3;
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;font-size:12px;color:var(--ink-soft);
+    margin-bottom:6px;font-weight:600;
+  }
+  .field input{
+    width:100%;padding:12px 14px;border:1px solid var(--card-border);
+    border-radius:9px;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .field input:focus{outline:2px solid var(--live);outline-offset:1px;}
+  #btn-login{
+    width:100%;padding:14px;border-radius:9px;background:var(--live);
+    color:#fff;font-size:14.5px;font-weight:600;margin-top:6px;
+  }
+  #btn-login:disabled{background:var(--mist);cursor:not-allowed;}
+  #login-error{
+    font-size:13px;color:var(--alert);margin-top:10px;min-height:16px;
+  }
+
+  /* ---------- APP ---------- */
+  #app{display:none;max-width:880px;margin:0 auto;padding:22px 20px 60px;}
+  #app.show{display:block;}
+  header.top{
+    display:flex;justify-content:space-between;align-items:center;
+    padding-bottom:18px;border-bottom:1px solid var(--card-border);
+    margin-bottom:22px;gap:12px;flex-wrap:wrap;
+  }
+  header.top .greet{font-size:15px;}
+  header.top .greet span{color:var(--ink-soft);}
+  #btn-logout{
+    background:transparent;color:var(--ink-soft);font-size:12.5px;
+    border:1px solid var(--card-border);padding:8px 14px;border-radius:100px;
+  }
+
+  .actions-row{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:18px;gap:12px;flex-wrap:wrap;
+  }
+  .actions-row h2{
+    font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:600;margin:0;
+  }
+  #btn-nova{
+    background:var(--live);color:#fff;padding:11px 18px;
+    border-radius:9px;font-size:13.5px;font-weight:600;
+  }
+
+  .consulta-card{
+    background:var(--card);border:1px solid var(--card-border);
+    border-radius:14px;padding:16px 18px;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;gap:14px;
+    flex-wrap:wrap;
+  }
+  .consulta-card .pname{font-size:15px;font-weight:500;}
+  .consulta-card .meta{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);
+    margin-top:3px;
+  }
+  .status-tag{
+    font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    font-weight:700;padding:5px 11px;border-radius:100px;
+  }
+  .status-tag.em_andamento{background:var(--live-soft);color:var(--live);}
+  .status-tag.finalizada{background:#EDEEEA;color:var(--ink-soft);}
+  .status-tag.cancelada{background:var(--alert-soft);color:var(--alert);}
+
+  .empty-state{
+    text-align:center;padding:50px 20px;color:var(--mist);
+    font-size:14px;border:1px dashed var(--card-border);border-radius:14px;
+  }
+
+  /* ---------- MODAL NOVA CONSULTA ---------- */
+  #modal-overlay{
+    position:fixed;inset:0;background:rgba(28,43,51,.55);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  #modal-overlay.show{display:flex;}
+  .modal{
+    background:#fff;border-radius:16px;max-width:420px;width:100%;
+    padding:24px;
+  }
+  .modal h2{
+    font-family:'Source Serif 4',serif;font-weight:500;font-size:19px;
+    margin:0 0 18px;
+  }
+  #patient-results{
+    max-height:160px;overflow-y:auto;margin-top:8px;
+  }
+  .patient-opt{
+    padding:10px 12px;border-radius:8px;font-size:13.5px;cursor:pointer;
+    border:1px solid transparent;
+  }
+  .patient-opt:hover{background:var(--bg);border-color:var(--card-border);}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .modal-actions button{flex:1;padding:12px;border-radius:9px;font-size:13.5px;font-weight:600;}
+  #btn-cancel-modal{background:transparent;border:1px solid var(--card-border);color:var(--ink-soft);}
+  #btn-criar-consulta{background:var(--live);color:#fff;}
+  #btn-criar-consulta:disabled{background:var(--mist);cursor:not-allowed;}
+  .modal-status{font-size:12.5px;color:var(--alert);margin-top:8px;min-height:16px;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="mark">MedScribe AI</div>
+    <h1>Entrar</h1>
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="••••••••">
+    </div>
+    <button id="btn-login">Entrar</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="top">
+    <div class="greet">Olá, <b id="medico-nome-header">—</b> <span id="medico-crm"></span></div>
+    <button id="btn-logout">Sair</button>
+  </header>
+
+  <div class="actions-row">
+    <h2>Consultas recentes</h2>
+    <button id="btn-nova">+ Nova consulta</button>
+  </div>
+
+  <div id="lista-consultas"></div>
+</div>
+
+<div id="modal-overlay">
+  <div class="modal">
+    <h2>Nova consulta</h2>
+    <div class="field">
+      <label>Buscar paciente</label>
+      <input type="text" id="busca-paciente" placeholder="Digite o nome do paciente">
+    </div>
+    <div id="patient-results"></div>
+    <div class="field" id="novo-paciente-field" style="display:none;margin-top:12px;">
+      <label>Cadastrar novo paciente</label>
+      <input type="text" id="novo-paciente-nome" placeholder="Nome completo">
+    </div>
+    <div class="modal-status" id="modal-status"></div>
+    <div class="modal-actions">
+      <button id="btn-cancel-modal">Cancelar</button>
+      <button id="btn-criar-consulta" disabled>Iniciar consulta</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const SUPABASE_URL = "https://cqjovptfsvuhrrfvlaai.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_uqaYECjQmq6u_fZdMQ5d3w_byRhIvFf";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentMedico = null;
+  let selectedPacienteId = null;
+  let selectedPacienteNome = null;
+
+  const loginScreen = document.getElementById('login-screen');
+  const appScreen = document.getElementById('app');
+  const loginError = document.getElementById('login-error');
+
+  // ---------- LOGIN ----------
+  document.getElementById('btn-login').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+    const btn = document.getElementById('btn-login');
+    loginError.textContent = '';
+    if(!email || !senha){ loginError.textContent = 'Preencha e-mail e senha.'; return; }
+    btn.disabled = true; btn.textContent = 'Entrando...';
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    btn.disabled = false; btn.textContent = 'Entrar';
+    if(error){ loginError.textContent = 'E-mail ou senha incorretos.'; return; }
+    await afterLogin(data.user.id);
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    location.reload();
+  });
+
+  async function afterLogin(authUserId){
+    const { data: medico, error } = await supabase
+      .from('medicos')
+      .select('*')
+      .eq('auth_user_id', authUserId)
+      .single();
+
+    if(error || !medico){
+      loginError.textContent = 'Usuário autenticado, mas sem cadastro de médico vinculado.';
+      return;
+    }
+    currentMedico = medico;
+    document.getElementById('medico-nome-header').textContent = medico.nome;
+    document.getElementById('medico-crm').textContent = 'CRM ' + medico.crm + '/' + medico.uf_crm;
+    loginScreen.style.display = 'none';
+    appScreen.classList.add('show');
+    carregarConsultas();
+  }
+
+  // Se já tiver sessão ativa, pula direto pro app
+  supabase.auth.getSession().then(({ data }) => {
+    if(data.session) afterLogin(data.session.user.id);
+  });
+
+  // ---------- LISTA DE CONSULTAS ----------
+  async function carregarConsultas(){
+    const lista = document.getElementById('lista-consultas');
+    lista.innerHTML = '<div class="empty-state">Carregando...</div>';
+
+    const { data, error } = await supabase
+      .from('consultas')
+      .select('id, data_consulta, status, pacientes(nome)')
+      .eq('medico_id', currentMedico.id)
+      .order('data_consulta', { ascending: false })
+      .limit(30);
+
+    if(error){
+      lista.innerHTML = '<div class="empty-state">Não foi possível carregar as consultas.</div>';
+      console.error(error);
+      return;
+    }
+    if(!data || data.length === 0){
+      lista.innerHTML = '<div class="empty-state">Nenhuma consulta ainda. Clique em "+ Nova consulta" para começar.</div>';
+      return;
+    }
+    lista.innerHTML = data.map(c => {
+      const d = new Date(c.data_consulta);
+      const dataFmt = d.toLocaleDateString('pt-BR') + ' · ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      const statusLabel = { em_andamento:'Em andamento', finalizada:'Finalizada', cancelada:'Cancelada' }[c.status] || c.status;
+      return `
+        <div class="consulta-card" onclick="window.location.href='medscribe_consentimento.html?consulta_id=${c.id}&paciente=${encodeURIComponent(c.pacientes?.nome || '')}&medico=${encodeURIComponent(currentMedico.nome)}'">
+          <div>
+            <div class="pname">${c.pacientes?.nome || 'Paciente sem nome'}</div>
+            <div class="meta">${dataFmt}</div>
+          </div>
+          <span class="status-tag ${c.status}">${statusLabel}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ---------- MODAL NOVA CONSULTA ----------
+  const overlay = document.getElementById('modal-overlay');
+  const buscaInput = document.getElementById('busca-paciente');
+  const resultsEl = document.getElementById('patient-results');
+  const novoField = document.getElementById('novo-paciente-field');
+  const novoNomeInput = document.getElementById('novo-paciente-nome');
+  const btnCriar = document.getElementById('btn-criar-consulta');
+  const modalStatus = document.getElementById('modal-status');
+
+  document.getElementById('btn-nova').addEventListener('click', () => {
+    overlay.classList.add('show');
+    buscaInput.value = '';
+    resultsEl.innerHTML = '';
+    novoField.style.display = 'none';
+    novoNomeInput.value = '';
+    selectedPacienteId = null;
+    selectedPacienteNome = null;
+    btnCriar.disabled = true;
+    modalStatus.textContent = '';
+    buscaInput.focus();
+  });
+
+  document.getElementById('btn-cancel-modal').addEventListener('click', () => {
+    overlay.classList.remove('show');
+  });
+
+  let buscaTimeout;
+  buscaInput.addEventListener('input', () => {
+    clearTimeout(buscaTimeout);
+    selectedPacienteId = null;
+    btnCriar.disabled = true;
+    const termo = buscaInput.value.trim();
+    if(termo.length < 2){ resultsEl.innerHTML = ''; novoField.style.display = 'none'; return; }
+    buscaTimeout = setTimeout(async () => {
+      const { data, error } = await supabase
+        .from('pacientes')
+        .select('id, nome')
+        .eq('medico_id', currentMedico.id)
+        .ilike('nome', '%' + termo + '%')
+        .limit(6);
+      if(error){ resultsEl.innerHTML = ''; return; }
+      resultsEl.innerHTML = (data || []).map(p =>
+        `<div class="patient-opt" data-id="${p.id}" data-nome="${p.nome}">${p.nome}</div>`
+      ).join('');
+      novoField.style.display = 'block';
+      novoNomeInput.value = termo;
+    }, 350);
+  });
+
+  resultsEl.addEventListener('click', (e) => {
+    const opt = e.target.closest('.patient-opt');
+    if(!opt) return;
+    selectedPacienteId = opt.dataset.id;
+    selectedPacienteNome = opt.dataset.nome;
+    novoField.style.display = 'none';
+    btnCriar.disabled = false;
+    modalStatus.textContent = 'Paciente selecionado: ' + selectedPacienteNome;
+    modalStatus.style.color = 'var(--ink-soft)';
+  });
+
+  novoNomeInput.addEventListener('input', () => {
+    selectedPacienteId = null;
+    btnCriar.disabled = novoNomeInput.value.trim().length < 2;
+    modalStatus.textContent = novoNomeInput.value.trim().length >= 2 ? 'Será cadastrado como novo paciente.' : '';
+    modalStatus.style.color = 'var(--ink-soft)';
+  });
+
+  btnCriar.addEventListener('click', async () => {
+    btnCriar.disabled = true;
+    modalStatus.style.color = 'var(--ink-soft)';
+    modalStatus.textContent = 'Criando consulta...';
+    try{
+      let pacienteId = selectedPacienteId;
+      let pacienteNome = selectedPacienteNome;
+
+      if(!pacienteId){
+        const nome = novoNomeInput.value.trim();
+        const { data: novoPaciente, error: errPaciente } = await supabase
+          .from('pacientes')
+          .insert({ medico_id: currentMedico.id, nome })
+          .select()
+          .single();
+        if(errPaciente) throw errPaciente;
+        pacienteId = novoPaciente.id;
+        pacienteNome = novoPaciente.nome;
+      }
+
+      const { data: novaConsulta, error: errConsulta } = await supabase
+        .from('consultas')
+        .insert({ medico_id: currentMedico.id, paciente_id: pacienteId, status: 'em_andamento' })
+        .select()
+        .single();
+      if(errConsulta) throw errConsulta;
+
+      window.location.href = `medscribe_consentimento.html?consulta_id=${novaConsulta.id}&paciente=${encodeURIComponent(pacienteNome)}&medico=${encodeURIComponent(currentMedico.nome)}`;
+    }catch(e){
+      console.error(e);
+      modalStatus.style.color = 'var(--alert)';
+      modalStatus.textContent = 'Erro ao criar consulta. Tente novamente.';
+      btnCriar.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

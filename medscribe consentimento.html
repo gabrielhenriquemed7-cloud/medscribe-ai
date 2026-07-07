@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedScribe AI — Consentimento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#F5F6F4;
+    --ink:#1C2B33;
+    --ink-soft:#4B5A61;
+    --live:#3A7D66;
+    --live-soft:#E4EFEC;
+    --alert:#9C3D2E;
+    --mist:#AEB8BE;
+    --card:#FFFFFF;
+    --card-border:#E2E6E4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 20px;
+  }
+  .wrap{max-width:520px;width:100%;}
+  .mark{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin-bottom:22px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .mark::before{
+    content:'';
+    width:8px;height:8px;
+    border-radius:50%;
+    background:var(--live);
+    display:inline-block;
+  }
+  .who{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .who b{color:var(--ink);font-weight:600;}
+
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:500;
+    font-size:28px;
+    line-height:1.3;
+    margin:8px 0 20px;
+  }
+
+  .points{
+    list-style:none;
+    margin:0 0 26px;
+    padding:0;
+  }
+  .points li{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:14px 0;
+    border-top:1px solid var(--card-border);
+    font-size:14.5px;
+    line-height:1.55;
+    color:var(--ink-soft);
+  }
+  .points li:last-child{border-bottom:1px solid var(--card-border);}
+  .points li .ico{
+    flex-shrink:0;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:var(--live-soft);
+    color:var(--live);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;
+    font-weight:700;
+    margin-top:1px;
+  }
+  .points li b{color:var(--ink);font-weight:600;}
+
+  .legal{
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:26px;
+  }
+
+  button{
+    font-family:'Space Grotesk',sans-serif;
+    cursor:pointer;
+    border:none;
+    width:100%;
+    padding:16px;
+    border-radius:10px;
+    font-size:15px;
+    font-weight:600;
+  }
+  #btn-agree{
+    background:var(--live);
+    color:#fff;
+    margin-bottom:10px;
+  }
+  #btn-agree:disabled{background:var(--mist);cursor:not-allowed;}
+  #btn-decline{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--card-border);
+  }
+
+  .result{
+    display:none;
+    text-align:center;
+    padding:36px 20px;
+  }
+  .result.show{display:block;}
+  .wrap.hidden{display:none;}
+  .result .badge{
+    width:52px;height:52px;
+    border-radius:50%;
+    margin:0 auto 18px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+  }
+  .result.ok .badge{background:var(--live-soft);color:var(--live);}
+  .result.no .badge{background:#F3E5E1;color:var(--alert);}
+  .result h2{
+    font-family:'Source Serif 4',serif;
+    font-weight:500;
+    font-size:21px;
+    margin:0 0 10px;
+  }
+  .result p{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin:0 0 24px;
+  }
+  .result button{background:var(--ink);color:#fff;}
+  .status-msg{
+    text-align:center;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    min-height:18px;
+  }
+  .status-msg.error{color:var(--alert);}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="consent-wrap">
+  <div class="mark">MedScribe AI</div>
+  <div class="who">Consulta de <b id="paciente-nome">Paciente</b> com <b id="medico-nome">Médico(a)</b></div>
+  <h1>Antes de começarmos, precisamos da sua autorização</h1>
+
+  <ul class="points">
+    <li><span class="ico">1</span><span>Durante a consulta, uma <b>inteligência artificial vai ouvir e transcrever</b> a conversa entre você e o médico, só pra ajudar a montar o resumo da consulta.</span></li>
+    <li><span class="ico">2</span><span>O médico <b>revisa tudo</b> que a IA sugerir antes de salvar qualquer coisa no seu prontuário — nada é registrado automaticamente sem essa revisão.</span></li>
+    <li><span class="ico">3</span><span>Você pode <b>pedir para pausar ou encerrar</b> a gravação a qualquer momento durante a consulta, sem precisar justificar.</span></li>
+    <li><span class="ico">4</span><span>Se preferir <b>não autorizar</b>, a consulta continua normalmente — só que sem o apoio da IA na transcrição.</span></li>
+  </ul>
+
+  <div class="legal">
+    Esta autorização segue a Resolução CFM nº 2.454/2026 sobre uso de IA na prática médica e a Lei Geral de Proteção de Dados (LGPD). Seus dados de saúde são tratados como informação sensível e protegidos de acordo com a legislação.
+  </div>
+
+  <button id="btn-agree">Concordo e autorizo a gravação</button>
+  <button id="btn-decline">Prefiro não gravar</button>
+  <div class="status-msg" id="status-msg"></div>
+</div>
+
+<div class="result ok" id="result-ok">
+  <div class="badge">✓</div>
+  <h2>Consentimento registrado</h2>
+  <p>Obrigado. A consulta pode começar — o médico já pode iniciar a gravação e transcrição.</p>
+  <button onclick="location.reload()">Voltar</button>
+</div>
+
+<div class="result no" id="result-no">
+  <div class="badge">–</div>
+  <h2>Sem gravação, sem problema</h2>
+  <p>A consulta segue normalmente. O médico fará as anotações da forma tradicional, sem o apoio da IA.</p>
+  <button onclick="location.reload()">Voltar</button>
+</div>
+
+<script>
+(function(){
+  // ---- Configuração do Supabase (projeto MedScribe AI) ----
+  const SUPABASE_URL = "https://cqjovptfsvuhrrfvlaai.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_uqaYECjQmq6u_fZdMQ5d3w_byRhIvFf";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // consulta_id vem por parâmetro de URL: ?consulta_id=xxxx&paciente=Nome&medico=Nome
+  const params = new URLSearchParams(window.location.search);
+  const consultaId = params.get('consulta_id');
+  const pacienteNome = params.get('paciente');
+  const medicoNome = params.get('medico');
+
+  if(pacienteNome) document.getElementById('paciente-nome').textContent = pacienteNome;
+  if(medicoNome) document.getElementById('medico-nome').textContent = medicoNome;
+
+  const btnAgree = document.getElementById('btn-agree');
+  const btnDecline = document.getElementById('btn-decline');
+  const statusMsg = document.getElementById('status-msg');
+  const wrap = document.getElementById('consent-wrap');
+
+  if(!consultaId){
+    statusMsg.textContent = 'Modo de teste: nenhum consulta_id na URL, o consentimento não será salvo no banco.';
+  }
+
+  async function registrarConsentimento(consentiu){
+    if(!consultaId){
+      showResult(consentiu);
+      return;
+    }
+    btnAgree.disabled = true;
+    btnDecline.disabled = true;
+    statusMsg.classList.remove('error');
+    statusMsg.textContent = 'Salvando...';
+    try{
+      const { error } = await supabase
+        .from('consultas')
+        .update({
+          consentimento_paciente: consentiu,
+          consentimento_data: new Date().toISOString()
+        })
+        .eq('id', consultaId);
+
+      if(error) throw error;
+      showResult(consentiu);
+    }catch(e){
+      statusMsg.classList.add('error');
+      statusMsg.textContent = 'Não foi possível salvar. Tente novamente.';
+      btnAgree.disabled = false;
+      btnDecline.disabled = false;
+      console.error(e);
+    }
+  }
+
+  function showResult(consentiu){
+    wrap.classList.add('hidden');
+    document.getElementById(consentiu ? 'result-ok' : 'result-no').classList.add('show');
+  }
+
+  btnAgree.addEventListener('click', () => registrarConsentimento(true));
+  btnDecline.addEventListener('click', () => registrarConsentimento(false));
+})();
+</script>
+</body>
+</html>

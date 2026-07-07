@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedScribe AI — Consulta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6F4;
+    --ink:#1C2B33;
+    --ink-soft:#4B5A61;
+    --live:#3A7D66;
+    --live-soft:#E4EFEC;
+    --alert:#9C3D2E;
+    --alert-soft:#F3E5E1;
+    --mist:#AEB8BE;
+    --card:#FFFFFF;
+    --card-border:#E2E6E4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+
+  /* ---------- CONSENT GATE ---------- */
+  #consent-gate{
+    position:fixed;inset:0;
+    background:var(--ink);
+    color:#F5F6F4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:24px;
+  }
+  #consent-gate.hidden{display:none;}
+  .consent-card{
+    max-width:460px;
+    width:100%;
+  }
+  .consent-card .eyebrow{color:#9FB3AC;}
+  .consent-card h1{
+    font-size:26px;
+    line-height:1.25;
+    margin:10px 0 18px;
+    font-weight:600;
+  }
+  .consent-card p{
+    font-size:15px;
+    line-height:1.6;
+    color:#C6CFCE;
+    margin:0 0 20px;
+  }
+  .consent-check{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:22px;
+    cursor:pointer;
+  }
+  .consent-check input{
+    margin-top:3px;
+    width:18px;height:18px;
+    accent-color:var(--live);
+    flex-shrink:0;
+  }
+  .consent-check span{font-size:14px;line-height:1.55;color:#E5E9E8;}
+  button{
+    font-family:'Space Grotesk',sans-serif;
+    cursor:pointer;
+    border:none;
+  }
+  #btn-start-consult{
+    width:100%;
+    padding:16px;
+    border-radius:10px;
+    background:var(--mist);
+    color:#1C2B33;
+    font-size:15px;
+    font-weight:600;
+    transition:background .15s ease;
+  }
+  #btn-start-consult:not(:disabled){background:var(--live);color:#fff;}
+  #btn-start-consult:disabled{cursor:not-allowed;}
+
+  /* ---------- MAIN SCREEN ---------- */
+  #app{max-width:1080px;margin:0 auto;padding:20px 20px 60px;}
+  header.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--card-border);
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  header.top .who{font-size:15px;font-weight:500;}
+  header.top .who span{color:var(--ink-soft);font-weight:400;}
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:100px;
+  }
+  .status-pill.idle{background:#EDEEEA;color:var(--ink-soft);}
+  .status-pill.live{background:var(--live-soft);color:var(--live);}
+  .status-pill.live .dot{
+    width:7px;height:7px;border-radius:50%;background:var(--live);
+    animation:pulse 1.4s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .recorder{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:16px;
+    padding:26px 24px;
+    display:flex;
+    align-items:center;
+    gap:24px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  canvas#wave{
+    flex:1 1 280px;
+    height:64px;
+    min-width:220px;
+    background:linear-gradient(180deg,#FAFBFA,#F2F4F3);
+    border-radius:8px;
+  }
+  .timer{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:34px;
+    font-weight:500;
+    letter-spacing:.02em;
+    min-width:110px;
+    text-align:center;
+  }
+  .controls{display:flex;gap:10px;}
+  .ctrl-btn{
+    width:48px;height:48px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;
+  }
+  .ctrl-btn.rec{background:var(--live);color:#fff;}
+  .ctrl-btn.pause{background:var(--mist);color:#1C2B33;}
+  .ctrl-btn.stop{background:var(--alert);color:#fff;}
+  .ctrl-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+  @media(min-width:820px){
+    .grid{grid-template-columns:1fr 1fr;}
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:16px;
+    padding:20px;
+  }
+  .panel h2{
+    font-size:13px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+    font-weight:600;
+  }
+  #transcript{
+    font-family:'Source Serif 4',serif;
+    font-style:italic;
+    font-size:15px;
+    line-height:1.7;
+    color:#33424A;
+    max-height:340px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  #transcript .empty, #fields .empty{
+    font-family:'Space Grotesk',sans-serif;
+    font-style:normal;
+    color:var(--mist);
+    font-size:13.5px;
+  }
+  .field-card{
+    border:1px solid var(--card-border);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:10px;
+    background:#FBFCFB;
+  }
+  .field-card:last-child{margin-bottom:0;}
+  .field-card .label{
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin-bottom:5px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .ai-badge{
+    font-size:9.5px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    background:var(--live-soft);
+    color:var(--live);
+    padding:2px 7px;
+    border-radius:100px;
+    font-weight:700;
+  }
+  .field-card .val{font-size:14px;line-height:1.5;color:var(--ink);}
+  #fields{max-height:340px;overflow-y:auto;padding-right:4px;}
+
+  .footnote{
+    margin-top:22px;
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    border-top:1px solid var(--card-border);
+    padding-top:16px;
+  }
+  .no-support{
+    background:var(--alert-soft);
+    color:var(--alert);
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:13px;
+    margin-bottom:18px;
+    display:none;
+  }
+</style>
+</head>
+<body>
+
+<div id="consent-gate">
+  <div class="consent-card">
+    <div class="eyebrow">Antes de começar</div>
+    <h1>Esta consulta será gravada e transcrita por inteligência artificial</h1>
+    <p>O áudio é usado apenas para gerar o resumo da consulta. Você pode pedir para pausar ou encerrar a gravação a qualquer momento. Todas as sugestões geradas por IA são revisadas e validadas pelo médico antes de entrarem no prontuário.</p>
+    <label class="consent-check">
+      <input type="checkbox" id="chk-consent">
+      <span>O paciente foi informado e concorda com a gravação e transcrição desta consulta por IA, conforme exigido pela Resolução CFM nº 2.454/2026 e pela LGPD.</span>
+    </label>
+    <button id="btn-start-consult" disabled>Iniciar consulta</button>
+  </div>
+</div>
+
+<div id="app">
+  <header class="top">
+    <div class="who">Dra. exemplo <span>· consulta com</span> Paciente de teste</div>
+    <div class="status-pill idle" id="status-pill"><span class="dot" style="display:none"></span><span id="status-text">Aguardando início</span></div>
+  </header>
+
+  <div class="no-support" id="no-support">
+    Este navegador não tem suporte a reconhecimento de fala em tempo real. A gravação de áudio funciona normalmente, mas a transcrição ao vivo fica indisponível — use Chrome ou Edge para testar essa parte.
+  </div>
+
+  <div class="recorder">
+    <canvas id="wave"></canvas>
+    <div class="timer" id="timer">00:00</div>
+    <div class="controls">
+      <button class="ctrl-btn rec" id="btn-rec" title="Gravar">●</button>
+      <button class="ctrl-btn pause" id="btn-pause" disabled title="Pausar">❚❚</button>
+      <button class="ctrl-btn stop" id="btn-stop" disabled title="Finalizar">■</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Transcrição ao vivo</h2>
+      <div id="transcript"><div class="empty">A transcrição aparece aqui conforme a consulta acontece.</div></div>
+    </div>
+    <div class="panel">
+      <h2>Anamnese sendo estruturada</h2>
+      <div id="fields"><div class="empty">Os campos são preenchidos automaticamente à medida que a IA identifica cada parte da conversa. Tudo aqui é sugestão — revise antes de salvar.</div></div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Sugestões marcadas com <span class="ai-badge" style="vertical-align:2px">IA</span> foram geradas automaticamente e precisam de validação médica antes de entrarem no prontuário definitivo, conforme a Resolução CFM nº 2.454/2026.
+  </div>
+</div>
+
+<script>
+(function(){
+  const chk = document.getElementById('chk-consent');
+  const btnStart = document.getElementById('btn-start-consult');
+  const gate = document.getElementById('consent-gate');
+  chk.addEventListener('change', () => { btnStart.disabled = !chk.checked; });
+  btnStart.addEventListener('click', () => { gate.classList.add('hidden'); });
+
+  const statusPill = document.getElementById('status-pill');
+  const statusDot = statusPill.querySelector('.dot');
+  const statusText = document.getElementById('status-text');
+  const timerEl = document.getElementById('timer');
+  const btnRec = document.getElementById('btn-rec');
+  const btnPause = document.getElementById('btn-pause');
+  const btnStop = document.getElementById('btn-stop');
+  const transcriptEl = document.getElementById('transcript');
+  const fieldsEl = document.getElementById('fields');
+  const canvas = document.getElementById('wave');
+  const ctx = canvas.getContext('2d');
+  const noSupport = document.getElementById('no-support');
+
+  let seconds = 0, timerInt = null, recognizing = false, recognition = null;
+  let audioCtx, analyser, dataArray, mediaStream, animId;
+  let fullTranscript = '';
+  let lastStructuredAt = 0;
+  let recorderState = 'idle'; // idle | recording | paused
+
+  function setStatus(state){
+    statusPill.className = 'status-pill ' + (state === 'idle' ? 'idle' : 'live');
+    statusDot.style.display = state === 'idle' ? 'none' : 'inline-block';
+    statusText.textContent = state === 'idle' ? 'Aguardando início' : state === 'paused' ? 'Pausado' : 'Gravando ao vivo';
+  }
+
+  function formatTime(s){
+    const m = Math.floor(s/60).toString().padStart(2,'0');
+    const ss = (s%60).toString().padStart(2,'0');
+    return m+':'+ss;
+  }
+
+  function startTimer(){
+    timerInt = setInterval(()=>{ seconds++; timerEl.textContent = formatTime(seconds); }, 1000);
+  }
+  function stopTimer(){ clearInterval(timerInt); }
+
+  function resizeCanvas(){
+    canvas.width = canvas.clientWidth * devicePixelRatio;
+    canvas.height = canvas.clientHeight * devicePixelRatio;
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function drawIdleWave(){
+    resizeCanvas();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle = '#D7DDD9';
+    ctx.lineWidth = 2*devicePixelRatio;
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height/2);
+    ctx.lineTo(canvas.width, canvas.height/2);
+    ctx.stroke();
+  }
+  drawIdleWave();
+
+  function drawWave(){
+    animId = requestAnimationFrame(drawWave);
+    if(!analyser) return;
+    analyser.getByteTimeDomainData(dataArray);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth = 2*devicePixelRatio;
+    ctx.strokeStyle = '#3A7D66';
+    ctx.beginPath();
+    const slice = canvas.width / dataArray.length;
+    let x = 0;
+    for(let i=0;i<dataArray.length;i++){
+      const v = dataArray[i]/128.0;
+      const y = (v * canvas.height)/2;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      x += slice;
+    }
+    ctx.stroke();
+  }
+
+  async function structureTranscript(){
+    if(!fullTranscript.trim()) return;
+    try{
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: "Você é um assistente que estrutura anamneses médicas a partir de transcrições de consulta em português. A partir da transcrição abaixo, extraia o que for identificável para os campos: queixa_principal, historia_doenca_atual, antecedentes, exame_fisico, hipotese_diagnostica, conduta_sugerida. Se um campo não tiver informação suficiente ainda, omita-o do JSON. Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou depois.\n\nTranscrição:\n" + fullTranscript
+          }]
+        })
+      });
+      const data = await resp.json();
+      const text = (data.content || []).filter(b=>b.type==='text').map(b=>b.text).join('');
+      const clean = text.replace(/```json|```/g,'').trim();
+      const parsed = JSON.parse(clean);
+      renderFields(parsed);
+    }catch(e){
+      console.error('Erro ao estruturar transcrição:', e);
+    }
+  }
+
+  const fieldLabels = {
+    queixa_principal: 'Queixa principal',
+    historia_doenca_atual: 'História da doença atual',
+    antecedentes: 'Antecedentes',
+    exame_fisico: 'Exame físico',
+    hipotese_diagnostica: 'Hipótese diagnóstica (sugestão IA)',
+    conduta_sugerida: 'Conduta sugerida (sugestão IA)'
+  };
+
+  function renderFields(obj){
+    const keys = Object.keys(obj).filter(k => fieldLabels[k] && obj[k]);
+    if(keys.length === 0) return;
+    fieldsEl.innerHTML = keys.map(k => `
+      <div class="field-card">
+        <div class="label">${fieldLabels[k]} <span class="ai-badge">IA</span></div>
+        <div class="val">${obj[k]}</div>
+      </div>
+    `).join('');
+  }
+
+  function appendTranscript(text){
+    if(transcriptEl.querySelector('.empty')) transcriptEl.innerHTML = '';
+    fullTranscript += ' ' + text;
+    const p = document.createElement('p');
+    p.style.margin = '0 0 10px';
+    p.textContent = text;
+    transcriptEl.appendChild(p);
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+
+    if(seconds - lastStructuredAt >= 15){
+      lastStructuredAt = seconds;
+      structureTranscript();
+    }
+  }
+
+  function setupSpeechRecognition(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ noSupport.style.display = 'block'; return null; }
+    const r = new SR();
+    r.lang = 'pt-BR';
+    r.continuous = true;
+    r.interimResults = false;
+    r.onresult = (e) => {
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        if(e.results[i].isFinal){
+          appendTranscript(e.results[i][0].transcript.trim());
+        }
+      }
+    };
+    r.onerror = (e) => console.warn('Speech recognition error:', e.error);
+    r.onend = () => { if(recorderState === 'recording'){ try{ r.start(); }catch(_){} } };
+    return r;
+  }
+
+  async function startRecording(){
+    try{
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }catch(e){
+      alert('Não foi possível acessar o microfone. Verifique as permissões do navegador.');
+      return;
+    }
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(mediaStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    source.connect(analyser);
+    drawWave();
+
+    recognition = setupSpeechRecognition();
+    if(recognition){ try{ recognition.start(); recognizing = true; }catch(_){} }
+
+    recorderState = 'recording';
+    setStatus('recording');
+    startTimer();
+    btnRec.disabled = true;
+    btnPause.disabled = false;
+    btnStop.disabled = false;
+  }
+
+  function pauseRecording(){
+    if(recorderState === 'recording'){
+      recorderState = 'paused';
+      setStatus('paused');
+      stopTimer();
+      if(recognition) try{ recognition.stop(); }catch(_){}
+      btnPause.textContent = '●';
+      btnPause.title = 'Retomar';
+    } else if(recorderState === 'paused'){
+      recorderState = 'recording';
+      setStatus('recording');
+      startTimer();
+      if(recognition) try{ recognition.start(); }catch(_){}
+      btnPause.textContent = '❚❚';
+      btnPause.title = 'Pausar';
+    }
+  }
+
+  function stopRecording(){
+    recorderState = 'idle';
+    setStatus('idle');
+    stopTimer();
+    cancelAnimationFrame(animId);
+    if(recognition) try{ recognition.stop(); }catch(_){}
+    if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+    if(audioCtx) audioCtx.close();
+    drawIdleWave();
+    btnRec.disabled = false;
+    btnPause.disabled = true;
+    btnStop.disabled = true;
+    btnPause.textContent = '❚❚';
+    if(fullTranscript.trim()) structureTranscript();
+  }
+
+  btnRec.addEventListener('click', startRecording);
+  btnPause.addEventListener('click', pauseRecording);
+  btnStop.addEventListener('click', stopRecording);
+})();
+</script>
+</body>
+</html>
