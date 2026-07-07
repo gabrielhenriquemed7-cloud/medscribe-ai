@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import "./Consultas.css";
@@ -25,7 +25,7 @@ export function Consultas() {
     setConsultas(null);
     const { data, error } = await supabase
       .from("consultas")
-      .select("id, data_consulta, status, consentimento_data, pacientes(nome)")
+      .select("id, data_consulta, status, consentimento_data, pacientes(id, nome)")
       .eq("medico_id", medico.id)
       .order("data_consulta", { ascending: false })
       .limit(30);
@@ -111,7 +111,17 @@ function ListaConsultas({ consultas, loadError, onAbrir }) {
             onClick={() => onAbrir(c)}
           >
             <div>
-              <div className="pname">{c.pacientes?.nome || "Paciente sem nome"}</div>
+              {c.pacientes?.id ? (
+                <Link
+                  className="pname pname-link"
+                  to={`/paciente/${c.pacientes.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {c.pacientes.nome}
+                </Link>
+              ) : (
+                <div className="pname">Paciente sem nome</div>
+              )}
               <div className="meta">{dataFmt}</div>
             </div>
             <span className={`status-tag ${c.status}`}>

@@ -74,6 +74,14 @@ header.top .greet span {
   font-size: 15px;
   font-weight: 500;
 }
+a.pname-link {
+  color: var(--ink);
+  text-decoration: none;
+}
+a.pname-link:hover {
+  color: var(--live);
+  text-decoration: underline;
+}
 .consulta-card .meta {
   font-family: "IBM Plex Mono", monospace;
   font-size: 12px;

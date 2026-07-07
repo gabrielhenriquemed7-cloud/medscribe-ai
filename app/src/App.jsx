@@ -6,6 +6,7 @@ import { Consultas } from "./pages/Consultas";
 import { Consentimento } from "./pages/Consentimento";
 import { Gravacao } from "./pages/Gravacao";
 import { Anamnese } from "./pages/Anamnese";
+import { Paciente } from "./pages/Paciente";
 
 function App() {
   return (
@@ -42,6 +43,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Anamnese />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/paciente/:id"
+            element={
+              <ProtectedRoute>
+                <Paciente />
               </ProtectedRoute>
             }
           />
