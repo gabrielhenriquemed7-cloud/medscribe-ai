@@ -156,6 +156,62 @@
   margin-bottom: 0;
 }
 
+.doc-tipos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.rascunho-doc {
+  margin-top: 14px;
+}
+.rascunho-doc textarea {
+  width: 100%;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  border: none;
+  resize: vertical;
+  padding: 0;
+  margin-top: 6px;
+}
+.rascunho-doc textarea:focus {
+  outline: none;
+}
+
+.doc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.doc-actions .btn-primary,
+.doc-actions .btn-ghost {
+  padding: 9px 16px;
+  font-size: 13px;
+}
+
+.doc-lista {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.doc-lista summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.doc-conteudo {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
 .link-btn {
   background: transparent;
   border: none;

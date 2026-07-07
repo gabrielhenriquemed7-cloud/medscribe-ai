@@ -13,6 +13,13 @@ const CAMPOS_MEDICO = [
   { key: "conduta", label: "Conduta" },
 ];
 
+const TIPOS_DOCUMENTO = [
+  { key: "atestado", label: "Atestado" },
+  { key: "receita", label: "Receita" },
+  { key: "pedido_exame", label: "Pedido de exame" },
+  { key: "carta_encaminhamento", label: "Carta de encaminhamento" },
+];
+
 export function Anamnese() {
   const { id: consultaId } = useParams();
   const [consulta, setConsulta] = useState(null);
@@ -138,6 +145,8 @@ export function Anamnese() {
             </div>
           )}
 
+          <DocumentosPanel consultaId={consultaId} />
+
           {transcricao && (
             <div className="panel">
               <button className="link-btn" onClick={() => setMostrarTranscricao((v) => !v)}>
@@ -159,6 +168,115 @@ export function Anamnese() {
             consulta e não são alteradas por esta tela, conforme a Resolução CFM nº 2.454/2026.
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+function DocumentosPanel({ consultaId }) {
+  const [documentos, setDocumentos] = useState(null);
+  const [gerandoTipo, setGerandoTipo] = useState(null);
+  const [erro, setErro] = useState("");
+  const [rascunho, setRascunho] = useState(null); // { tipo, conteudo }
+  const [emitindo, setEmitindo] = useState(false);
+
+  useEffect(() => {
+    carregarDocumentos();
+  }, [consultaId]);
+
+  async function carregarDocumentos() {
+    const { data } = await supabase
+      .from("documentos")
+      .select("*")
+      .eq("consulta_id", consultaId)
+      .order("created_at", { ascending: false });
+    setDocumentos(data || []);
+  }
+
+  async function gerar(tipo) {
+    setErro("");
+    setGerandoTipo(tipo);
+    setRascunho(null);
+    const { data, error } = await supabase.functions.invoke("gerar-documento", {
+      body: { consulta_id: consultaId, tipo },
+    });
+    setGerandoTipo(null);
+    if (error || !data?.conteudo) {
+      setErro("Não foi possível gerar o rascunho. Tente novamente.");
+      return;
+    }
+    setRascunho({ tipo, conteudo: data.conteudo });
+  }
+
+  async function emitir() {
+    setEmitindo(true);
+    const { error } = await supabase.from("documentos").insert({
+      consulta_id: consultaId,
+      tipo: rascunho.tipo,
+      conteudo: rascunho.conteudo,
+      emitido: true,
+      emitido_em: new Date().toISOString(),
+    });
+    setEmitindo(false);
+    if (!error) {
+      setRascunho(null);
+      carregarDocumentos();
+    }
+  }
+
+  return (
+    <div className="panel">
+      <h2>Documentos</h2>
+
+      <div className="doc-tipos">
+        {TIPOS_DOCUMENTO.map(({ key, label }) => (
+          <button
+            key={key}
+            className="btn-ghost"
+            disabled={gerandoTipo !== null}
+            onClick={() => gerar(key)}
+          >
+            {gerandoTipo === key ? "Gerando..." : `+ ${label}`}
+          </button>
+        ))}
+      </div>
+
+      {erro && <div className="error-msg">{erro}</div>}
+
+      {rascunho && (
+        <div className="field-card rascunho-doc">
+          <div className="label">
+            Rascunho: {TIPOS_DOCUMENTO.find((t) => t.key === rascunho.tipo)?.label}{" "}
+            <span className="ai-badge">IA</span>
+          </div>
+          <textarea
+            rows={8}
+            value={rascunho.conteudo}
+            onChange={(e) => setRascunho((r) => ({ ...r, conteudo: e.target.value }))}
+          />
+          <div className="doc-actions">
+            <button className="btn-ghost" onClick={() => setRascunho(null)}>
+              Descartar
+            </button>
+            <button className="btn-primary" disabled={emitindo} onClick={emitir}>
+              {emitindo ? "Emitindo..." : "Emitir documento"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {documentos && documentos.length > 0 && (
+        <div className="doc-lista">
+          {documentos.map((d) => (
+            <details className="field-card readonly" key={d.id}>
+              <summary>
+                {TIPOS_DOCUMENTO.find((t) => t.key === d.tipo)?.label || d.tipo} — emitido em{" "}
+                {new Date(d.emitido_em).toLocaleString("pt-BR")}
+              </summary>
+              <div className="val doc-conteudo">{d.conteudo}</div>
+            </details>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -63,6 +63,17 @@ create table anamneses (
   updated_at timestamptz default now()
 );
 
+create table documentos (
+  id uuid primary key default gen_random_uuid(),
+  consulta_id uuid references consultas(id) not null,
+  tipo text not null, -- atestado | receita | pedido_exame | carta_encaminhamento
+  conteudo text not null,
+  emitido boolean default false,
+  emitido_em timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
 create index idx_consultas_medico on consultas(medico_id);
 create index idx_consultas_paciente on consultas(paciente_id);
 create index idx_pacientes_medico on pacientes(medico_id);
@@ -73,6 +84,7 @@ alter table pacientes enable row level security;
 alter table consultas enable row level security;
 alter table transcricoes enable row level security;
 alter table anamneses enable row level security;
+alter table documentos enable row level security;
 
 -- Só SELECT: médicos são provisionados manualmente (via SQL editor / dashboard),
 -- não há auto-cadastro no app, então não existe policy de insert/update aqui de propósito.
@@ -95,6 +107,15 @@ create policy "medico_ve_suas_transcricoes" on transcricoes
   );
 
 create policy "medico_ve_suas_anamneses" on anamneses
+  for all using (
+    consulta_id in (
+      select id from consultas where medico_id in (
+        select id from medicos where auth_user_id = auth.uid()
+      )
+    )
+  );
+
+create policy "medico_ve_seus_documentos" on documentos
   for all using (
     consulta_id in (
       select id from consultas where medico_id in (
