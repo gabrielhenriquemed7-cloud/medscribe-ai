@@ -373,9 +373,14 @@ function Recorder({ consulta, consultaId, navigate }) {
         <div className="who">
           {consulta.medicos?.nome} <span>· consulta com</span> {consulta.pacientes?.nome}
         </div>
-        <div className={`status-pill ${statusClass}`}>
-          <span className="dot" style={{ display: statusClass === "idle" ? "none" : "inline-block" }} />
-          <span>{statusText}</span>
+        <div className="grav-header-right">
+          <a className="btn-ghost" href="/scores" target="_blank" rel="noreferrer">
+            Scores ↗
+          </a>
+          <div className={`status-pill ${statusClass}`}>
+            <span className="dot" style={{ display: statusClass === "idle" ? "none" : "inline-block" }} />
+            <span>{statusText}</span>
+          </div>
         </div>
       </header>
 

@@ -22,6 +22,14 @@ header.top .who span {
   color: var(--ink-soft);
   font-weight: 400;
 }
+.grav-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.grav-header-right .btn-ghost {
+  text-decoration: none;
+}
 
 .status-pill {
   display: inline-flex;

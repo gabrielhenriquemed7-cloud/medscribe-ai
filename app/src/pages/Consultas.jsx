@@ -63,6 +63,9 @@ export function Consultas() {
           <Link className="btn-ghost" to="/protocolos">
             Protocolos
           </Link>
+          <Link className="btn-ghost" to="/scores">
+            Scores
+          </Link>
           <button id="btn-logout" onClick={signOut}>
             Sair
           </button>

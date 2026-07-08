@@ -8,6 +8,7 @@ import { Gravacao } from "./pages/Gravacao";
 import { Anamnese } from "./pages/Anamnese";
 import { Paciente } from "./pages/Paciente";
 import { Protocolos } from "./pages/Protocolos";
+import { Scores } from "./pages/Scores";
 
 function App() {
   return (
@@ -60,6 +61,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Protocolos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scores"
+            element={
+              <ProtectedRoute>
+                <Scores />
               </ProtectedRoute>
             }
           />
