@@ -13,6 +13,12 @@ const CAMPOS_MEDICO = [
   { key: "conduta", label: "Conduta" },
 ];
 
+function autoGrow(el) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
 const TIPOS_DOCUMENTO = [
   { key: "atestado", label: "Atestado" },
   { key: "receita", label: "Receita" },
@@ -117,9 +123,14 @@ export function Anamnese() {
               <div className="field-card" key={key}>
                 <div className="label">{label}</div>
                 <textarea
+                  ref={autoGrow}
                   rows={3}
+                  placeholder={key === "conduta" ? "Descreva a conduta definida para este paciente" : ""}
                   value={campos[key] || ""}
-                  onChange={(e) => handleChange(key, e.target.value)}
+                  onChange={(e) => {
+                    handleChange(key, e.target.value);
+                    autoGrow(e.target);
+                  }}
                 />
               </div>
             ))}
@@ -250,9 +261,13 @@ function DocumentosPanel({ consultaId }) {
             <span className="ai-badge">IA</span>
           </div>
           <textarea
+            ref={autoGrow}
             rows={8}
             value={rascunho.conteudo}
-            onChange={(e) => setRascunho((r) => ({ ...r, conteudo: e.target.value }))}
+            onChange={(e) => {
+              setRascunho((r) => ({ ...r, conteudo: e.target.value }));
+              autoGrow(e.target);
+            }}
           />
           <div className="doc-actions">
             <button className="btn-ghost" onClick={() => setRascunho(null)}>
