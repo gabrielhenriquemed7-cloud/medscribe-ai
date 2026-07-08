@@ -84,6 +84,17 @@ create table protocolos (
   updated_at timestamptz default now()
 );
 
+create table agendamentos (
+  id uuid primary key default gen_random_uuid(),
+  medico_id uuid references medicos(id) not null,
+  paciente_id uuid references pacientes(id) not null,
+  data_hora timestamptz not null,
+  status text default 'agendado', -- agendado | realizado | cancelado
+  observacoes text,
+  consulta_id uuid references consultas(id),
+  created_at timestamptz default now()
+);
+
 create index idx_consultas_medico on consultas(medico_id);
 create index idx_consultas_paciente on consultas(paciente_id);
 create index idx_pacientes_medico on pacientes(medico_id);
@@ -96,6 +107,7 @@ alter table transcricoes enable row level security;
 alter table anamneses enable row level security;
 alter table documentos enable row level security;
 alter table protocolos enable row level security;
+alter table agendamentos enable row level security;
 
 -- Só SELECT: médicos são provisionados manualmente (via SQL editor / dashboard),
 -- não há auto-cadastro no app, então não existe policy de insert/update aqui de propósito.
@@ -136,6 +148,9 @@ create policy "medico_ve_seus_documentos" on documentos
   );
 
 create policy "medico_ve_seus_protocolos" on protocolos
+  for all using (medico_id in (select id from medicos where auth_user_id = auth.uid()));
+
+create policy "medico_ve_seus_agendamentos" on agendamentos
   for all using (medico_id in (select id from medicos where auth_user_id = auth.uid()));
 
 -- Storage: bucket 'audios-consulta' (privado)

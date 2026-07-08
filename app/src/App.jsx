@@ -9,6 +9,7 @@ import { Anamnese } from "./pages/Anamnese";
 import { Paciente } from "./pages/Paciente";
 import { Protocolos } from "./pages/Protocolos";
 import { Scores } from "./pages/Scores";
+import { Agenda } from "./pages/Agenda";
 
 function App() {
   return (
@@ -69,6 +70,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Scores />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agenda"
+            element={
+              <ProtectedRoute>
+                <Agenda />
               </ProtectedRoute>
             }
           />

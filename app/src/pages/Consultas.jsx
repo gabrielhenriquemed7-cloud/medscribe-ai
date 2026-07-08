@@ -60,6 +60,9 @@ export function Consultas() {
           </span>
         </div>
         <div className="header-actions">
+          <Link className="btn-ghost" to="/agenda">
+            Agenda
+          </Link>
           <Link className="btn-ghost" to="/protocolos">
             Protocolos
           </Link>

@@ -1,0 +1,189 @@
+.agenda-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 20px 20px 60px;
+}
+
+.agenda-page .voltar {
+  display: inline-block;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+.agenda-page .voltar:hover {
+  color: var(--ink);
+}
+
+header.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 22px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.agenda-page h1 {
+  font-family: "Source Serif 4", serif;
+  font-weight: 500;
+  font-size: 24px;
+  margin: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--mist);
+  font-size: 14px;
+  border: 1px dashed var(--card-border);
+  border-radius: 14px;
+}
+
+.agendamento-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.agendamento-card .data-hora {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 3px;
+  text-transform: capitalize;
+}
+.agendamento-card .pname-link {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+}
+.agendamento-card .pname-link:hover {
+  color: var(--live);
+  text-decoration: underline;
+}
+.agendamento-card .observacoes {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+}
+
+.agendamento-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.agendamento-actions .btn-primary,
+.agendamento-actions .btn-ghost {
+  padding: 8px 14px;
+  font-size: 12.5px;
+}
+
+.status-tag {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 100px;
+}
+.status-tag.agendado {
+  background: var(--live-soft);
+  color: var(--live);
+}
+.status-tag.realizado {
+  background: #edeeea;
+  color: var(--ink-soft);
+}
+.status-tag.cancelado {
+  background: var(--alert-soft);
+  color: var(--alert);
+}
+
+/* Modal (mesmo padrão visual usado em Consultas.jsx) */
+#modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 43, 51, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+#modal-overlay.show {
+  display: flex;
+}
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 100%;
+  padding: 24px;
+}
+.modal h2 {
+  font-family: "Source Serif 4", serif;
+  font-weight: 500;
+  font-size: 19px;
+  margin: 0 0 18px;
+}
+#patient-results {
+  max-height: 160px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+.patient-opt {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.patient-opt:hover {
+  background: var(--bg);
+  border-color: var(--card-border);
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.modal-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+#btn-cancel-modal {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--ink-soft);
+}
+.modal-actions button:last-child {
+  background: var(--live);
+  color: #fff;
+}
+.modal-actions button:last-child:disabled {
+  background: var(--mist);
+  cursor: not-allowed;
+}
+.modal-status {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  min-height: 16px;
+}
+.modal-status.error {
+  color: var(--alert);
+}
