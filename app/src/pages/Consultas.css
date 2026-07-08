@@ -24,6 +24,14 @@ header.top .greet {
 header.top .greet span {
   color: var(--ink-soft);
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-actions .btn-ghost {
+  text-decoration: none;
+}
 #btn-logout {
   background: transparent;
   color: var(--ink-soft);

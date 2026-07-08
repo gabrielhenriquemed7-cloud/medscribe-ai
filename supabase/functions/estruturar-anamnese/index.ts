@@ -1,9 +1,15 @@
 // Edge Function: recebe a transcrição bruta de uma consulta e devolve os
 // campos estruturados de anamnese, chamando a API do Claude do lado do
-// servidor (a chave nunca fica exposta no client).
+// servidor (a chave nunca fica exposta no client). Também busca os
+// protocolos clínicos que o médico configurou, para basear a sugestão de
+// conduta neles quando a hipótese diagnóstica corresponder a algum.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 const ANTHROPIC_MODEL = "claude-sonnet-5";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
 const FIELD_KEYS = [
   "queixa_principal",
@@ -17,12 +23,23 @@ const FIELD_KEYS = [
   "alertas_seguranca",
 ];
 
-const SYSTEM_PROMPT = `Você é um assistente que estrutura anamneses médicas a partir de transcrições de consulta em português (Brasil).
+function buildSystemPrompt(protocolos: { condicao: string; conteudo: string }[]) {
+  let prompt = `Você é um assistente que estrutura anamneses médicas a partir de transcrições de consulta em português (Brasil).
 A partir da transcrição fornecida, extraia o que for identificável para os campos: ${FIELD_KEYS.join(", ")}.
 Se um campo não tiver informação suficiente ainda, omita-o do JSON.
 Para o campo alertas_seguranca: preencha apenas se identificar um risco concreto e sustentado pela transcrição — por exemplo, alergia informada pelo paciente a algo mencionado na conduta, interação medicamentosa entre remédios que o paciente já usa e algo sugerido na consulta, ou contraindicação evidente entre antecedentes e a conduta discutida. Nunca invente riscos hipotéticos sem base na transcrição; se não houver risco identificável, omita este campo.
-Todo conteúdo gerado é uma sugestão para revisão do médico, nunca uma conclusão definitiva.
-Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou depois.`;
+Todo conteúdo gerado é uma sugestão para revisão do médico, nunca uma conclusão definitiva.`;
+
+  if (protocolos.length > 0) {
+    prompt += `\n\nO médico configurou os seguintes protocolos clínicos próprios. Se a hipótese diagnóstica corresponder a alguma dessas condições, baseie sugestao_ia_conduta neles e mencione o nome da condição do protocolo usado:\n`;
+    for (const p of protocolos) {
+      prompt += `\n- ${p.condicao}: ${p.conteudo}`;
+    }
+  }
+
+  prompt += `\n\nResponda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou depois.`;
+  return prompt;
+}
 
 Deno.serve(async (req) => {
   const corsHeaders = {
@@ -57,6 +74,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      global: { headers: { Authorization: req.headers.get("Authorization")! } },
+    });
+    const { data: protocolos } = await supabase.from("protocolos").select("condicao, conteudo");
+
     const resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -67,7 +89,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: ANTHROPIC_MODEL,
         max_tokens: 1000,
-        system: SYSTEM_PROMPT,
+        system: buildSystemPrompt(protocolos || []),
         messages: [{ role: "user", content: `Transcrição:\n${transcript}` }],
       }),
     });

@@ -59,9 +59,14 @@ export function Consultas() {
             CRM {medico.crm}/{medico.uf_crm}
           </span>
         </div>
-        <button id="btn-logout" onClick={signOut}>
-          Sair
-        </button>
+        <div className="header-actions">
+          <Link className="btn-ghost" to="/protocolos">
+            Protocolos
+          </Link>
+          <button id="btn-logout" onClick={signOut}>
+            Sair
+          </button>
+        </div>
       </header>
 
       <div className="actions-row">
