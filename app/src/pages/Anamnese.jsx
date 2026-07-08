@@ -118,6 +118,15 @@ export function Anamnese() {
         </div>
       ) : (
         <>
+          {anamnese.alertas_seguranca && (
+            <div className="alerta-seguranca">
+              <div className="label">
+                ⚠ Alerta de segurança <span className="alerta-badge">IA</span>
+              </div>
+              <div className="val">{anamnese.alertas_seguranca}</div>
+            </div>
+          )}
+
           <div className="grid">
             {CAMPOS_MEDICO.map(({ key, label }) => (
               <div className="field-card" key={key}>

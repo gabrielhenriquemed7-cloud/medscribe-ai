@@ -190,6 +190,23 @@ canvas#wave {
   border-radius: 100px;
   font-weight: 700;
 }
+.field-card-alerta {
+  background: var(--alert-soft);
+  border-color: var(--alert);
+}
+.field-card-alerta .label {
+  color: var(--alert);
+}
+.alerta-badge {
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--alert);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-weight: 700;
+}
 .field-card .val {
   width: 100%;
   font-size: 14px;

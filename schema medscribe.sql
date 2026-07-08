@@ -57,6 +57,7 @@ create table anamneses (
   conduta text,
   sugestao_ia_conduta text,
   sugestao_ia_diagnostico_diferencial text,
+  alertas_seguranca text, -- risco de interação medicamentosa, alergia ou contraindicação identificado pela IA
   validado_pelo_medico boolean default false,
   validado_em timestamptz,
   created_at timestamptz default now(),

@@ -14,11 +14,13 @@ const FIELD_KEYS = [
   "hipotese_diagnostica",
   "sugestao_ia_conduta",
   "sugestao_ia_diagnostico_diferencial",
+  "alertas_seguranca",
 ];
 
 const SYSTEM_PROMPT = `Você é um assistente que estrutura anamneses médicas a partir de transcrições de consulta em português (Brasil).
 A partir da transcrição fornecida, extraia o que for identificável para os campos: ${FIELD_KEYS.join(", ")}.
 Se um campo não tiver informação suficiente ainda, omita-o do JSON.
+Para o campo alertas_seguranca: preencha apenas se identificar um risco concreto e sustentado pela transcrição — por exemplo, alergia informada pelo paciente a algo mencionado na conduta, interação medicamentosa entre remédios que o paciente já usa e algo sugerido na consulta, ou contraindicação evidente entre antecedentes e a conduta discutida. Nunca invente riscos hipotéticos sem base na transcrição; se não houver risco identificável, omita este campo.
 Todo conteúdo gerado é uma sugestão para revisão do médico, nunca uma conclusão definitiva.
 Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou depois.`;
 

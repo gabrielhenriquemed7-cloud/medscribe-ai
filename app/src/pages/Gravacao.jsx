@@ -12,6 +12,7 @@ const FIELD_LABELS = {
   hipotese_diagnostica: "Hipótese diagnóstica",
   sugestao_ia_conduta: "Conduta sugerida",
   sugestao_ia_diagnostico_diferencial: "Diagnóstico diferencial",
+  alertas_seguranca: "Alerta de segurança",
 };
 const FIELD_ORDER = Object.keys(FIELD_LABELS);
 
@@ -438,19 +439,25 @@ function Recorder({ consulta, consultaId, navigate }) {
                 antes de salvar.
               </div>
             ) : (
-              camposPreenchidos.map((key) => (
-                <div className="field-card" key={key}>
-                  <div className="label">
-                    {FIELD_LABELS[key]} <span className="ai-badge">IA</span>
+              camposPreenchidos.map((key) => {
+                const isAlerta = key === "alertas_seguranca";
+                return (
+                  <div className={`field-card${isAlerta ? " field-card-alerta" : ""}`} key={key}>
+                    <div className="label">
+                      {FIELD_LABELS[key]}{" "}
+                      <span className={isAlerta ? "alerta-badge" : "ai-badge"}>
+                        {isAlerta ? "⚠ ALERTA" : "IA"}
+                      </span>
+                    </div>
+                    <textarea
+                      className="val"
+                      rows={3}
+                      value={fields[key] || ""}
+                      onChange={(e) => handleFieldChange(key, e.target.value)}
+                    />
                   </div>
-                  <textarea
-                    className="val"
-                    rows={3}
-                    value={fields[key] || ""}
-                    onChange={(e) => handleFieldChange(key, e.target.value)}
-                  />
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
