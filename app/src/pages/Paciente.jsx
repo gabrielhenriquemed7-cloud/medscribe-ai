@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { AppLayout } from "../components/AppLayout";
 import "./Paciente.css";
 
 const STATUS_LABEL = {
@@ -73,10 +74,18 @@ export function Paciente() {
   }
 
   if (loadError) {
-    return <div className="paciente-page">Não foi possível carregar este paciente.</div>;
+    return (
+      <AppLayout>
+        <div className="paciente-page">Não foi possível carregar este paciente.</div>
+      </AppLayout>
+    );
   }
   if (!paciente) {
-    return <div className="paciente-page">Carregando...</div>;
+    return (
+      <AppLayout>
+        <div className="paciente-page">Carregando...</div>
+      </AppLayout>
+    );
   }
 
   const idade = paciente.data_nascimento
@@ -86,12 +95,13 @@ export function Paciente() {
     : null;
 
   return (
-    <div className="paciente-page">
-      <Link className="voltar" to="/consultas">
-        ← Consultas
-      </Link>
+    <AppLayout>
+      <div className="paciente-page">
+        <Link className="voltar" to="/pacientes">
+          ← Pacientes
+        </Link>
 
-      <header className="top">
+        <header className="top">
         <div>
           <h1>{paciente.nome}</h1>
           <div className="meta">
@@ -142,6 +152,7 @@ export function Paciente() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </AppLayout>
   );
 }

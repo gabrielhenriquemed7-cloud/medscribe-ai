@@ -12,7 +12,7 @@ export function Login() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && medico) return <Navigate to="/consultas" replace />;
+  if (!loading && medico) return <Navigate to="/inicio" replace />;
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -44,7 +44,7 @@ export function Login() {
       await supabase.auth.signOut();
       return;
     }
-    navigate("/consultas");
+    navigate("/inicio");
   }
 
   return (

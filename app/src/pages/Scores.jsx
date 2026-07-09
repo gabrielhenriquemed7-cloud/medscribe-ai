@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { AppLayout } from "../components/AppLayout";
 import "./Scores.css";
 
 const SCORES = [
@@ -204,27 +204,26 @@ export function Scores() {
   const [aberto, setAberto] = useState(null);
 
   return (
-    <div className="scores-page">
-      <Link className="voltar" to="/consultas">
-        ← Consultas
-      </Link>
-      <h1>Scores clínicos</h1>
-      <p className="descricao">
-        Calculadoras de referência para uso durante a consulta. Os resultados são um apoio à
-        decisão — a interpretação clínica final é sempre do médico.
-      </p>
+    <AppLayout>
+      <div className="scores-page">
+        <h1>Scores clínicos</h1>
+        <p className="descricao">
+          Calculadoras de referência para uso durante a consulta. Os resultados são um apoio à
+          decisão — a interpretação clínica final é sempre do médico.
+        </p>
 
-      <div className="lista-scores">
-        {SCORES.map((score) => (
-          <ScoreCard
-            key={score.key}
-            score={score}
-            aberto={aberto === score.key}
-            onToggle={() => setAberto(aberto === score.key ? null : score.key)}
-          />
-        ))}
+        <div className="lista-scores">
+          {SCORES.map((score) => (
+            <ScoreCard
+              key={score.key}
+              score={score}
+              aberto={aberto === score.key}
+              onToggle={() => setAberto(aberto === score.key ? null : score.key)}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

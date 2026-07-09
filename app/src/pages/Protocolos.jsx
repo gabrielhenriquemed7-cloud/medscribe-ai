@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { AppLayout } from "../components/AppLayout";
 import "./Protocolos.css";
 
 export function Protocolos() {
@@ -48,11 +48,9 @@ export function Protocolos() {
   }
 
   return (
-    <div className="protocolos-page">
-      <Link className="voltar" to="/consultas">
-        ← Consultas
-      </Link>
-      <h1>Protocolos clínicos</h1>
+    <AppLayout>
+      <div className="protocolos-page">
+        <h1>Protocolos clínicos</h1>
       <p className="descricao">
         Cadastre condições e a conduta/exames que você segue para elas. A IA passa a basear a
         sugestão de conduta nesses protocolos quando a hipótese diagnóstica corresponder, durante
@@ -104,6 +102,7 @@ export function Protocolos() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </AppLayout>
   );
 }

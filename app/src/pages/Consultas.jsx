@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { AppLayout } from "../components/AppLayout";
 import "./Consultas.css";
 
 const STATUS_LABEL = {
@@ -11,7 +12,7 @@ const STATUS_LABEL = {
 };
 
 export function Consultas() {
-  const { medico, papel, signOut } = useAuth();
+  const { medico } = useAuth();
   const navigate = useNavigate();
   const [consultas, setConsultas] = useState(null);
   const [loadError, setLoadError] = useState(false);
@@ -51,50 +52,24 @@ export function Consultas() {
   }
 
   return (
-    <div id="app" className="show">
-      <header className="top">
-        <div className="greet">
-          Olá, <b>{medico.nome}</b>{" "}
-          <span>
-            CRM {medico.crm}/{medico.uf_crm}
-          </span>
+    <AppLayout>
+      <div id="app" className="show">
+        <div className="actions-row">
+          <h2>Consultas recentes</h2>
+          <NovaConsultaButton
+            medicoId={medico.id}
+            clinicaId={medico.clinica_id}
+            onCriada={carregarConsultas}
+          />
         </div>
-        <div className="header-actions">
-          <Link className="btn-ghost" to="/agenda">
-            Agenda
-          </Link>
-          <Link className="btn-ghost" to="/protocolos">
-            Protocolos
-          </Link>
-          <Link className="btn-ghost" to="/scores">
-            Scores
-          </Link>
-          {papel === "admin" && (
-            <Link className="btn-ghost" to="/clinica">
-              Clínica
-            </Link>
-          )}
-          <button id="btn-logout" onClick={signOut}>
-            Sair
-          </button>
-        </div>
-      </header>
 
-      <div className="actions-row">
-        <h2>Consultas recentes</h2>
-        <NovaConsultaButton
-          medicoId={medico.id}
-          clinicaId={medico.clinica_id}
-          onCriada={carregarConsultas}
+        <ListaConsultas
+          consultas={consultas}
+          loadError={loadError}
+          onAbrir={abrirConsulta}
         />
       </div>
-
-      <ListaConsultas
-        consultas={consultas}
-        loadError={loadError}
-        onAbrir={abrirConsulta}
-      />
-    </div>
+    </AppLayout>
   );
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { AppLayout } from "../components/AppLayout";
 import "./Agenda.css";
 
 const STATUS_LABEL = {
@@ -73,29 +74,26 @@ export function Agenda() {
   }
 
   return (
-    <div className="agenda-page">
-      <header className="top">
-        <div>
-          <Link className="voltar" to="/consultas">
-            ← Consultas
-          </Link>
+    <AppLayout>
+      <div className="agenda-page">
+        <header className="top">
           <h1>Agenda</h1>
-        </div>
-        <NovoAgendamentoButton
-          medicoId={medico.id}
-          clinicaId={medico.clinica_id}
-          onCriado={carregar}
-        />
-      </header>
+          <NovoAgendamentoButton
+            medicoId={medico.id}
+            clinicaId={medico.clinica_id}
+            onCriado={carregar}
+          />
+        </header>
 
-      <ListaAgendamentos
-        agendamentos={agendamentos}
-        loadError={loadError}
-        onIniciar={iniciarConsulta}
-        onVer={verConsulta}
-        onCancelar={cancelar}
-      />
-    </div>
+        <ListaAgendamentos
+          agendamentos={agendamentos}
+          loadError={loadError}
+          onIniciar={iniciarConsulta}
+          onVer={verConsulta}
+          onCancelar={cancelar}
+        />
+      </div>
+    </AppLayout>
   );
 }
 

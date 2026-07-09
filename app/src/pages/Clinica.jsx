@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { AppLayout } from "../components/AppLayout";
 import "./Clinica.css";
 
 const PAPEL_LABEL = {
@@ -68,21 +68,31 @@ export function Clinica() {
   }
 
   if (!clinicaId) {
-    return <div className="clinica-page">Sua conta não está vinculada a uma clínica.</div>;
+    return (
+      <AppLayout>
+        <div className="clinica-page">Sua conta não está vinculada a uma clínica.</div>
+      </AppLayout>
+    );
   }
   if (loadError) {
-    return <div className="clinica-page">Não foi possível carregar os dados da clínica.</div>;
+    return (
+      <AppLayout>
+        <div className="clinica-page">Não foi possível carregar os dados da clínica.</div>
+      </AppLayout>
+    );
   }
   if (!clinica) {
-    return <div className="clinica-page">Carregando...</div>;
+    return (
+      <AppLayout>
+        <div className="clinica-page">Carregando...</div>
+      </AppLayout>
+    );
   }
 
   return (
-    <div className="clinica-page">
-      <Link className="voltar" to="/consultas">
-        ← Consultas
-      </Link>
-      <h1>Clínica</h1>
+    <AppLayout>
+      <div className="clinica-page">
+        <h1>Clínica</h1>
 
       <div className="bloco">
         <h2 className="section-title">Dados da clínica</h2>
@@ -150,7 +160,8 @@ export function Clinica() {
           Apenas administradores da clínica podem editar o nome e gerenciar membros.
         </div>
       )}
-    </div>
+      </div>
+    </AppLayout>
   );
 }
 

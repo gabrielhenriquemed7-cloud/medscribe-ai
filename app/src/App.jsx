@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Login } from "./pages/Login";
+import { Inicio } from "./pages/Inicio";
 import { Consultas } from "./pages/Consultas";
+import { Pacientes } from "./pages/Pacientes";
 import { Consentimento } from "./pages/Consentimento";
 import { Gravacao } from "./pages/Gravacao";
 import { Anamnese } from "./pages/Anamnese";
@@ -18,6 +20,22 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route
+            path="/inicio"
+            element={
+              <ProtectedRoute>
+                <Inicio />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pacientes"
+            element={
+              <ProtectedRoute>
+                <Pacientes />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/consultas"
             element={
@@ -90,7 +108,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/consultas" replace />} />
+          <Route path="*" element={<Navigate to="/inicio" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
