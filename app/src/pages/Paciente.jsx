@@ -60,7 +60,12 @@ export function Paciente() {
     setCriando(true);
     const { data: novaConsulta, error } = await supabase
       .from("consultas")
-      .insert({ medico_id: medico.id, paciente_id: pacienteId, status: "em_andamento" })
+      .insert({
+        medico_id: medico.id,
+        clinica_id: medico.clinica_id,
+        paciente_id: pacienteId,
+        status: "em_andamento",
+      })
       .select()
       .single();
     setCriando(false);

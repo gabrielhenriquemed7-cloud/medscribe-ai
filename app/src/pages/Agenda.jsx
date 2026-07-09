@@ -24,8 +24,10 @@ export function Agenda() {
     setLoadError(false);
     const { data, error } = await supabase
       .from("agendamentos")
-      .select("id, data_hora, status, observacoes, consulta_id, pacientes(id, nome), consultas(status)")
-      .eq("medico_id", medico.id)
+      .select(
+        "id, data_hora, status, observacoes, consulta_id, pacientes(id, nome), consultas(status), medicos(nome)",
+      )
+      .eq("clinica_id", medico.clinica_id)
       .order("data_hora", { ascending: true });
 
     if (error) {
@@ -38,7 +40,12 @@ export function Agenda() {
   async function iniciarConsulta(agendamento) {
     const { data: novaConsulta, error } = await supabase
       .from("consultas")
-      .insert({ medico_id: medico.id, paciente_id: agendamento.pacientes.id, status: "em_andamento" })
+      .insert({
+        medico_id: medico.id,
+        clinica_id: medico.clinica_id,
+        paciente_id: agendamento.pacientes.id,
+        status: "em_andamento",
+      })
       .select()
       .single();
     if (error) return;
@@ -74,7 +81,11 @@ export function Agenda() {
           </Link>
           <h1>Agenda</h1>
         </div>
-        <NovoAgendamentoButton medicoId={medico.id} onCriado={carregar} />
+        <NovoAgendamentoButton
+          medicoId={medico.id}
+          clinicaId={medico.clinica_id}
+          onCriado={carregar}
+        />
       </header>
 
       <ListaAgendamentos
@@ -118,6 +129,7 @@ function ListaAgendamentos({ agendamentos, loadError, onIniciar, onVer, onCancel
               <Link className="pname-link" to={`/paciente/${a.pacientes?.id}`}>
                 {a.pacientes?.nome || "Paciente sem nome"}
               </Link>
+              {a.medicos?.nome && <div className="observacoes">{a.medicos.nome}</div>}
               {a.observacoes && <div className="observacoes">{a.observacoes}</div>}
             </div>
             <div className="agendamento-actions">
@@ -145,7 +157,7 @@ function ListaAgendamentos({ agendamentos, loadError, onIniciar, onVer, onCancel
   );
 }
 
-function NovoAgendamentoButton({ medicoId, onCriado }) {
+function NovoAgendamentoButton({ medicoId, clinicaId, onCriado }) {
   const [open, setOpen] = useState(false);
   const [busca, setBusca] = useState("");
   const [resultados, setResultados] = useState([]);
@@ -183,7 +195,7 @@ function NovoAgendamentoButton({ medicoId, onCriado }) {
       const { data, error } = await supabase
         .from("pacientes")
         .select("id, nome")
-        .eq("medico_id", medicoId)
+        .eq("clinica_id", clinicaId)
         .ilike("nome", `%${termo}%`)
         .limit(6);
       setResultados(error ? [] : data || []);
@@ -208,7 +220,7 @@ function NovoAgendamentoButton({ medicoId, onCriado }) {
       if (!pacienteId) {
         const { data: novoPaciente, error: errPaciente } = await supabase
           .from("pacientes")
-          .insert({ medico_id: medicoId, nome: nomeNovo })
+          .insert({ medico_id: medicoId, clinica_id: clinicaId, nome: nomeNovo })
           .select()
           .single();
         if (errPaciente) throw errPaciente;
@@ -217,6 +229,7 @@ function NovoAgendamentoButton({ medicoId, onCriado }) {
 
       const { error: errAgendamento } = await supabase.from("agendamentos").insert({
         medico_id: medicoId,
+        clinica_id: clinicaId,
         paciente_id: pacienteId,
         data_hora: new Date(dataHora).toISOString(),
         observacoes: observacoes.trim() || null,

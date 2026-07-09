@@ -25,8 +25,8 @@ export function Consultas() {
     setConsultas(null);
     const { data, error } = await supabase
       .from("consultas")
-      .select("id, data_consulta, status, consentimento_data, pacientes(id, nome)")
-      .eq("medico_id", medico.id)
+      .select("id, data_consulta, status, consentimento_data, pacientes(id, nome), medicos(nome)")
+      .eq("clinica_id", medico.clinica_id)
       .order("data_consulta", { ascending: false })
       .limit(30);
 
@@ -77,7 +77,11 @@ export function Consultas() {
 
       <div className="actions-row">
         <h2>Consultas recentes</h2>
-        <NovaConsultaButton medicoId={medico.id} onCriada={carregarConsultas} />
+        <NovaConsultaButton
+          medicoId={medico.id}
+          clinicaId={medico.clinica_id}
+          onCriada={carregarConsultas}
+        />
       </div>
 
       <ListaConsultas
@@ -133,7 +137,10 @@ function ListaConsultas({ consultas, loadError, onAbrir }) {
               ) : (
                 <div className="pname">Paciente sem nome</div>
               )}
-              <div className="meta">{dataFmt}</div>
+              <div className="meta">
+                {dataFmt}
+                {c.medicos?.nome && ` · ${c.medicos.nome}`}
+              </div>
             </div>
             <span className={`status-tag ${c.status}`}>
               {STATUS_LABEL[c.status] || c.status}
@@ -145,7 +152,7 @@ function ListaConsultas({ consultas, loadError, onAbrir }) {
   );
 }
 
-function NovaConsultaButton({ medicoId, onCriada }) {
+function NovaConsultaButton({ medicoId, clinicaId, onCriada }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [busca, setBusca] = useState("");
@@ -180,7 +187,7 @@ function NovaConsultaButton({ medicoId, onCriada }) {
       const { data, error } = await supabase
         .from("pacientes")
         .select("id, nome")
-        .eq("medico_id", medicoId)
+        .eq("clinica_id", clinicaId)
         .ilike("nome", `%${termo}%`)
         .limit(6);
       setResultados(error ? [] : data || []);
@@ -205,7 +212,7 @@ function NovaConsultaButton({ medicoId, onCriada }) {
       if (!pacienteId) {
         const { data: novoPaciente, error: errPaciente } = await supabase
           .from("pacientes")
-          .insert({ medico_id: medicoId, nome: nomeNovo })
+          .insert({ medico_id: medicoId, clinica_id: clinicaId, nome: nomeNovo })
           .select()
           .single();
         if (errPaciente) throw errPaciente;
@@ -214,7 +221,12 @@ function NovaConsultaButton({ medicoId, onCriada }) {
 
       const { data: novaConsulta, error: errConsulta } = await supabase
         .from("consultas")
-        .insert({ medico_id: medicoId, paciente_id: pacienteId, status: "em_andamento" })
+        .insert({
+          medico_id: medicoId,
+          clinica_id: clinicaId,
+          paciente_id: pacienteId,
+          status: "em_andamento",
+        })
         .select()
         .single();
       if (errConsulta) throw errConsulta;

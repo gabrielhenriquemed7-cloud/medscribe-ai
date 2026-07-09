@@ -5,6 +5,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [medico, setMedico] = useState(null);
+  const [papel, setPapel] = useState(null);
   const [loading, setLoading] = useState(true);
 
   async function loadMedico(authUserId) {
@@ -14,6 +15,13 @@ export function AuthProvider({ children }) {
       .eq("auth_user_id", authUserId)
       .single();
     setMedico(error ? null : data);
+
+    const { data: membro } = await supabase
+      .from("membros_clinica")
+      .select("papel")
+      .eq("auth_user_id", authUserId)
+      .single();
+    setPapel(membro?.papel ?? null);
   }
 
   useEffect(() => {
@@ -32,6 +40,7 @@ export function AuthProvider({ children }) {
           await loadMedico(session.user.id);
         } else {
           setMedico(null);
+          setPapel(null);
         }
         setLoading(false);
       },
@@ -46,10 +55,11 @@ export function AuthProvider({ children }) {
   async function signOut() {
     await supabase.auth.signOut();
     setMedico(null);
+    setPapel(null);
   }
 
   return (
-    <AuthContext.Provider value={{ medico, loading, signOut }}>
+    <AuthContext.Provider value={{ medico, papel, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
