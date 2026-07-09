@@ -11,7 +11,7 @@ const STATUS_LABEL = {
 };
 
 export function Consultas() {
-  const { medico, signOut } = useAuth();
+  const { medico, papel, signOut } = useAuth();
   const navigate = useNavigate();
   const [consultas, setConsultas] = useState(null);
   const [loadError, setLoadError] = useState(false);
@@ -69,6 +69,11 @@ export function Consultas() {
           <Link className="btn-ghost" to="/scores">
             Scores
           </Link>
+          {papel === "admin" && (
+            <Link className="btn-ghost" to="/clinica">
+              Clínica
+            </Link>
+          )}
           <button id="btn-logout" onClick={signOut}>
             Sair
           </button>

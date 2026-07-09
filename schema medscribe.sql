@@ -28,6 +28,7 @@ create table membros_clinica (
   auth_user_id uuid references auth.users(id) not null,
   papel text not null default 'medico', -- admin | medico | recepcao
   medico_id uuid references medicos(id),
+  email text,
   created_at timestamptz default now(),
   unique (clinica_id, auth_user_id)
 );
@@ -156,13 +157,28 @@ as $$
   select clinica_id from membros_clinica where auth_user_id = auth.uid() and papel in ('admin', 'medico');
 $$;
 
+create or replace function minhas_clinicas_admin()
+returns setof uuid
+language sql
+security definer
+stable
+as $$
+  select clinica_id from membros_clinica where auth_user_id = auth.uid() and papel = 'admin';
+$$;
+
 -- Gestão de clínicas/membros é feita via SQL editor por enquanto (sem tela de
 -- convite/self-service ainda), por isso só há policy de SELECT nessas duas.
 create policy "membro_ve_sua_clinica" on clinicas
   for select using (id in (select minhas_clinicas()));
 
+create policy "admin_atualiza_sua_clinica" on clinicas
+  for update using (id in (select minhas_clinicas_admin()));
+
 create policy "membro_ve_membros_da_clinica" on membros_clinica
   for select using (auth_user_id = auth.uid() or clinica_id in (select minhas_clinicas()));
+
+create policy "admin_remove_membros_da_clinica" on membros_clinica
+  for delete using (clinica_id in (select minhas_clinicas_admin()));
 
 -- Médicos: cada um vê a si mesmo, e também os demais médicos da mesma clínica
 -- (útil pra recepção/agenda mostrar o nome de qualquer médico da clínica).
